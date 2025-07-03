@@ -2,21 +2,21 @@ package com.example.shop.entity;
 
 import com.example.shop.constant.Role;
 import com.example.shop.dto.MemberFormDto;
-import groovyjarjarpicocli.CommandLine;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Entity
-@Table(name="member")
-@Getter
-@Setter
+@Getter@Setter
 @ToString
-public class Member {
+@Table(name = "member")
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class Member  extends BaseEntity{
+
     @Id
-    @Column(name="member_id")
+    @Column(name = "member_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -24,20 +24,25 @@ public class Member {
 
     @Column(unique = true)
     private String email;
-    private String password;
-    private String address;
 
+    private String password;
+
+    private String address;
+    
     @Enumerated(EnumType.STRING)
     private Role role;
+    
+    //MemberFormDTo -> member entity 변환 --> 왜? DB저장하기 위해서
+    public static Member createMember(MemberFormDto memberFormDto,
+                                      PasswordEncoder passwordEncoder) {
 
-    public static Member createMember(MemberFormDto memberFormDto, PasswordEncoder passwordEncoder) {
-        Member member = new Member();
-        member.setName(memberFormDto.getName());
-        member.setEmail(memberFormDto.getEmail());
-        member.setAddress(memberFormDto.getAddress());
-        String password = passwordEncoder.encode(memberFormDto.getPassword());
-        member.setPassword(password);
-        member.setRole(Role.USER);
-        return member;
+        //String password = passwordEncoder.encode(memberFormDto.getPassword());
+        return Member.builder()
+                .name(memberFormDto.getName())
+                .email(memberFormDto.getEmail())
+                .password(passwordEncoder.encode(memberFormDto.getPassword()))
+                .address(memberFormDto.getAddress())
+                .role(Role.ADMIN)
+                .build();
     }
 }
